@@ -1,7 +1,7 @@
 {
-  "name": "com.damandeepsingh.game--whac-a-mole",
+  "name": "com.damandeepsingh.seed-with-sass",
   "version": "1.0.0",
-  "description": "WhackAMole Game",
+  "description": "UI Seed",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

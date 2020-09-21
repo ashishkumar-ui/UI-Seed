@@ -16,7 +16,7 @@ const browserSync = browserSyncCreate('dev-hoist');
 
 const babel = require('gulp-babel');
 
-const basePath = path.join(__dirname, 'game');
+const basePath = path.join(__dirname, 'app');
 const paths = {
     resources: path.join(basePath, 'assets', '**', '**'),
     scripts: path.join(basePath, '**', '*.js'),
@@ -89,7 +89,7 @@ const jsWatch = () => {
 
 const resourcesWatch = () => {
     return src([
-        path.join(basePath, 'game', 'assets', '**', '**'),
+        path.join(basePath, 'app', 'assets', '**', '**'),
         path.join(basePath, '*')], callback => {
         series(resources, browserSyncReload)(callback);
     })
