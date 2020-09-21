@@ -20,7 +20,7 @@ const basePath = path.join(__dirname, 'app');
 const paths = {
     resources: path.join(basePath, 'assets', '**', '**'),
     scripts: path.join(basePath, '**', '*.js'),
-    styles: path.join(basePath, '**', '*.scss'),
+    styles: [path.join(basePath, '**', '*.scss'), path.join(basePath, '**', '*.css')],
     dist: path.join(__dirname, 'dist'),
     index: path.join(basePath, '*.*')
 };
@@ -38,8 +38,7 @@ const browserSyncReload = done => {
     done();
 };
 
-
-export const css = () => src(paths.styles, { allowEmpty: true, follow: true})
+const css = () => src(paths.styles, { allowEmpty: true, follow: true})
         .pipe(sass({outputStyle: 'expanded'}))
         .pipe(postcss([autoprefixer()]))
         .pipe(dest(paths.dist))
@@ -62,7 +61,7 @@ export const clean = () => src([paths.dist], {read: false, allowEmpty: true})
 
 const build = (cb) => series(clean, css, js, resources, indexFiles)(cb);
 
-const cssWatch = () => watch(path.join(basePath, '**/**.scss'), callback => {
+const cssWatch = () => watch([path.join(basePath, '**/**.scss'), path.join(basePath, '**/**.css')], callback => {
         series(css)(callback);
     });
 
@@ -76,7 +75,9 @@ const resourcesWatch = () =>  watch([
         series(resources, browserSyncReload)(callback);
     });
 
-const watchAll = done => (parallel(cssWatch, jsWatch, resourcesWatch))(done)
+const indexWatch = () => watch(path.join(basePath, '*.*'), callback => series(indexFiles, browserSyncReload)(callback));
+
+const watchAll = done => (parallel(cssWatch, jsWatch, resourcesWatch, indexWatch))(done)
 
 exports.default = build;
 
