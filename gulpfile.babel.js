@@ -39,66 +39,45 @@ const browserSyncReload = done => {
 };
 
 
-export const css = () => {
-    return src(paths.styles, { allowEmpty: true, follow: true})
+export const css = () => src(paths.styles, { allowEmpty: true, follow: true})
         .pipe(sass({outputStyle: 'expanded'}))
         .pipe(postcss([autoprefixer()]))
         .pipe(dest(paths.dist))
         .pipe(browserSync.stream());
-}
 
-const js = () => {
-    return src(paths.scripts, {allowEmpty: true, follow: true})
+const js = () => src(paths.scripts, {allowEmpty: true, follow: true})
         .pipe(babel(require('./babel.config.js')))
-        .pipe(dest(paths.dist))
-}
+        .pipe(dest(paths.dist));
 
-const resources = () => {
-    return src([
+const resources = () => src([
         paths.resources], {allowEmpty: true})
         .pipe(dest(path.join(paths.dist, 'assets')))
         .pipe(browserSync.stream());
-}
 
-const indexFiles = () => {
-    return src(paths.index, {allowEmpty: true, dot: true, follow: true})
-        .pipe(dest(paths.dist))
-}
+const indexFiles = () => src(paths.index, {allowEmpty: true, dot: true, follow: true})
+        .pipe(dest(paths.dist));
 
-export const clean = () => {
-    return src([paths.dist], {read: false, allowEmpty: true})
+export const clean = () => src([paths.dist], {read: false, allowEmpty: true})
         .pipe(gulpClean({force: true}));
-};
 
-const build = (cb) => {
-    // place code for your default task here
-    series(clean, css, js, resources, indexFiles)(cb)
-}
+const build = (cb) => series(clean, css, js, resources, indexFiles)(cb);
 
-export const cssWatch = () => {
-    return watch(path.join(basePath, '**/**.scss'), callback => {
+const cssWatch = () => watch(path.join(basePath, '**/**.scss'), callback => {
         series(css)(callback);
     });
-};
 
-const jsWatch = () => {
-    return src(path.join(basePath, '**/**.js'), callback => {
+const jsWatch = () => watch(path.join(basePath, '**/**.js'), callback => {
         series(js, browserSyncReload)(callback);
-    })
-}
+    });
 
-const resourcesWatch = () => {
-    return src([
+const resourcesWatch = () =>  watch([
         path.join(basePath, 'app', 'assets', '**', '**'),
         path.join(basePath, '*')], callback => {
         series(resources, browserSyncReload)(callback);
-    })
-}
+    });
+
+const watchAll = done => (parallel(cssWatch, jsWatch, resourcesWatch))(done)
 
 exports.default = build;
 
-export const develop = (done) => {
-    series(build, parallel(cssWatch, jsWatch, resourcesWatch, browserSyncServer))(done)
-}
-
-
+export const develop = (done) => series(build, parallel(watchAll, browserSyncServer))(done);

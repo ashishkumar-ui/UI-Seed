@@ -1,5 +1,3 @@
-"use strict";
-
-(function () {
-  console.log('yay');
+(() => {
+  console.log(..."Dance Monkey!".split(``));
 })();
