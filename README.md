@@ -45,7 +45,10 @@ install Node dependencies
 Developement
 
 `npm run develop` - Opens Browser Sync live server and watches for file changes, reloads/updates view.
+
 `npm run build` - Generates user deployable code inside `dist` directory.
+
 `npm run build:prod` - Generates Minified build inside `dist` directory.
+
 `npm run test` - Runs AVA test for all the `.test.js` files
 
