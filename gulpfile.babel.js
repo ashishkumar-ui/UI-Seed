@@ -6,6 +6,11 @@ import gulpClean from 'gulp-clean';
 import sass from 'gulp-sass';
 import postcss from 'gulp-postcss';
 import autoprefixer from 'autoprefixer';
+import cleanCSS from "gulp-clean-css";
+
+//JS
+const babel = require('gulp-babel');
+import minify from "gulp-minify";
 
 // Node Utitlies
 import path from 'path';
@@ -14,7 +19,6 @@ import path from 'path';
 import {create as browserSyncCreate} from 'browser-sync';
 const browserSync = browserSyncCreate('dev-hoist');
 
-const babel = require('gulp-babel');
 
 const basePath = path.join(__dirname, 'app');
 const paths = {
@@ -38,11 +42,18 @@ const browserSyncReload = done => {
     done();
 };
 
-const css = () => src(paths.styles, { allowEmpty: true, follow: true})
-        .pipe(sass({outputStyle: 'expanded'}))
-        .pipe(postcss([autoprefixer()]))
-        .pipe(dest(paths.dist))
-        .pipe(browserSync.stream());
+const css = (cb, minify) => {
+    const stream = src(paths.styles, { allowEmpty: true, follow: true})
+        .pipe(sass({outputStyle: 'expanded'}));
+    if(minify) {
+        stream.pipe(cleanCSS({debug: true}, (details) => {
+            console.log(`${details.name}: ${details.stats.originalSize}`);
+            console.log(`${details.name}: ${details.stats.minifiedSize}`);
+        }));
+    }
+    return stream.pipe(postcss([autoprefixer()])).pipe(dest(paths.dist))
+    .pipe(browserSync.stream());;
+};
 
 const js = () => src(paths.scripts, {allowEmpty: true, follow: true})
         .pipe(babel(require('./babel.config.js')))
@@ -82,3 +93,17 @@ const watchAll = done => (parallel(cssWatch, jsWatch, resourcesWatch, indexWatch
 exports.default = build;
 
 export const develop = (done) => series(build, parallel(watchAll, browserSyncServer))(done);
+
+const jsMinify = () => {
+    return src(path.join(paths.dist, '**', '*.js'))
+    .pipe(minify({
+        ext: {
+            min: '.js',
+            src: '-debug.js'
+        },
+        exclude: ['tests', 'specs']
+    }))
+    .pipe(dest(paths.dist));
+}
+
+export const prod = (done) => series(clean, cb => css(cb, true), js, jsMinify, resources, indexFiles)(done);
