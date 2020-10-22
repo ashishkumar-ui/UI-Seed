@@ -72,21 +72,21 @@ export const clean = () => src([paths.dist], {read: false, allowEmpty: true})
 
 const build = (cb) => series(clean, css, js, resources, indexFiles)(cb);
 
-const cssWatch = () => watch([path.join(basePath, '**/**.scss'), path.join(basePath, '**/**.css')], callback => {
+const cssWatch = () => watch(['app/**/**.scss', 'app/**/**.css'], callback => {
         series(css)(callback);
     });
 
-const jsWatch = () => watch(path.join(basePath, '**/**.js'), callback => {
+const jsWatch = () => watch('app/**/**.js', callback => {
         series(js, browserSyncReload)(callback);
     });
 
 const resourcesWatch = () =>  watch([
-        path.join(basePath, 'app', 'assets', '**', '**'),
-        path.join(basePath, '*')], callback => {
+        'app/assets/**/**',
+        'app/*'], callback => {
         series(resources, browserSyncReload)(callback);
     });
 
-const indexWatch = () => watch(path.join(basePath, '*.*'), callback => series(indexFiles, browserSyncReload)(callback));
+const indexWatch = () => watch(`app/*.*`, callback => series(indexFiles, browserSyncReload)(callback));
 
 const watchAll = done => (parallel(cssWatch, jsWatch, resourcesWatch, indexWatch))(done)
 
